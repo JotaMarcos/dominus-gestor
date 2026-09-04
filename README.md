@@ -91,6 +91,27 @@ docker compose up --build -d
 - **Web UI:** [http://localhost:8080](http://localhost:8080)
 - **PostgreSQL:** `localhost:5432` _(Database: `dominus_db` | User: `dominus`)_
 
+### 🩹 Solução de Problemas
+
+**Erro: `Conflict. The container name "/dominus_postgres" (ou "/dominus_app") is already in use`**
+Containers de uma execução anterior ainda existem. Remova-os (os dados do banco no volume `pgdata` não são apagados) e suba novamente:
+```
+docker compose down
+docker compose up --build -d
+```
+
+**Erro: `Ports are not available: exposing port TCP 0.0.0.0:5432 ... bind: Only one usage of each socket address ...`**
+Outro processo no host já está usando a porta 5432 — geralmente um PostgreSQL instalado localmente no Windows. Identifique o processo:
+```
+netstat -ano | findstr :5432
+```
+A última coluna é o PID. Descubra o serviço correspondente (PowerShell) e pare-o (requer terminal como Administrador):
+```
+Get-Service | Where-Object { $_.Name -like "*postgres*" }
+net stop postgresql-x64-16
+```
+Alternativa sem mexer no Postgres local: altere a porta exposta no `docker-compose.yml` (ex.: `"5433:5432"` no serviço `postgres-db`) e suba novamente.
+
 ---
 
 ## 👨‍💻 Autor
